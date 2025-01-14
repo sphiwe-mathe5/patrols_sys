@@ -1,0 +1,167 @@
+{% load static %} 
+{% load humanize %}
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <link rel="stylesheet" href="{% static 'css/list.css' %}" />
+        <link
+            rel="stylesheet"
+            href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap"
+        />
+        <link
+            rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+        />
+        <title>Patrols System</title>
+        <style>
+            .container {
+                width: 160%;
+                max-width: 400px;
+                margin-left: 500px;
+                padding: 20px;
+            }
+            @media (max-width: 768px) {
+                .container {
+                    width: 100%;
+                    max-width: none;
+                    margin-left: auto;
+                    margin-right: auto;
+                    padding: 20px;
+                }
+            }
+            .form-card {
+                background-color: #ffffff;
+                border-radius: 12px;
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
+                padding: 30px;
+            }
+            h2 {
+                color: #333;
+                margin-bottom: 24px;
+                text-align: center;
+                font-size: 24px;
+                font-weight: 600;
+            }
+            .modern-form {
+                display: flex;
+                flex-direction: column;
+            }
+            .form-group {
+                margin-bottom: 20px;
+                position: relative;
+            }
+            label {
+                display: block;
+                margin-bottom: 6px;
+                color: #555;
+                font-size: 14px;
+                font-weight: 500;
+            }
+            input[type="text"],
+            input[type="email"],
+            input[type="number"],
+            select,
+            textarea {
+                width: 90%;
+                padding: 10px 12px;
+                border: 1px solid #ddd;
+                border-radius: 8px;
+                font-size: 16px;
+                transition: all 0.3s ease;
+                background-color: #f9f9f9;
+            }
+            input[type="text"]:focus,
+            input[type="email"]:focus,
+            input[type="number"]:focus,
+            select:focus,
+            textarea:focus {
+                border-color: #4a90e2;
+                outline: none;
+                box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
+                background-color: #ffffff;
+            }
+            .help-text {
+                display: block;
+                margin-top: 4px;
+                color: #777;
+                font-size: 12px;
+            }
+            .error-message {
+                color: #e74c3c;
+                font-size: 13px;
+                margin-top: 4px;
+            }
+            .btn {
+                display: inline-block;
+                padding: 12px 20px;
+                font-size: 16px;
+                font-weight: 600;
+                text-align: center;
+                text-decoration: none;
+                border-radius: 8px;
+                transition: all 0.3s ease;
+                cursor: pointer;
+                border: none;
+                width: 100%;
+            }
+            .btn-primary {
+                background-color: #4a90e2;
+                color: #ffffff;
+            }
+            .btn-primary:hover {
+                background-color: #3a7bc8;
+                transform: translateY(-1px);
+                box-shadow: 0 4px 6px rgba(50, 50, 93, 0.11), 0 1px 3px rgba(0, 0, 0, 0.08);
+            }
+            @media (max-width: 480px) {
+                .container {
+                    padding: 10px;
+                }
+                .form-card {
+                    padding: 20px;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <nav class="navbar">
+            <div class="logo">
+                <a href="{% url 'index' %}"></a>
+            </div>
+            <div class="quote_btn-container">
+                {% if not user.is_authenticated %}
+                <a href="{% url 'login' %}" class="sign-up"
+                    ><span><b>LOG IN</b></span></a
+                >
+                <a href="{% url 'signup' %}" class="sign-up"
+                    ><span><b>REGISTER</b></span></a
+                >
+                {% else %}
+                <a href="{% url 'resident_list' %}" class="sign-up">VIEW RESIDENTS</a>
+                <a href="{% url 'logout' %}" class="sign-up">
+                    <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                </a>
+                {% endif %}
+            </div>
+        </nav>
+        <div class="container">
+            <div class="form-card">
+                <h2>Add New Resident</h2>
+                <form method="post" class="modern-form">
+                    {% csrf_token %} {% for field in form %}
+                    <div class="form-group">
+                        {{ field.label_tag }} {{ field }} {% if field.help_text %}
+                        <small class="help-text">{{ field.help_text }}</small>
+                        {% endif %} {% for error in field.errors %}
+                        <p class="error-message">{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                    {% endfor %}
+                    <button type="submit" class="btn btn-primary">Add Resident</button>
+                </form>
+            </div>
+        </div>
+    </body>
+</html>

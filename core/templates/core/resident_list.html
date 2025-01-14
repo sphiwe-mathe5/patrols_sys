@@ -1,0 +1,214 @@
+{% load static %}
+{% load humanize %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static 'css/list.css' %}">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <title>Manage Residents</title>
+
+</head>
+<body>
+    <div class="container">
+        <div class="month-navigation">
+            <h2>Residents Payment</h2>
+            <button class="btn btn-outline-secondary" onclick="openSearchModal()">
+                <i class="fas fa-search"></i> Search Residents
+            </button>
+            <div class="btn-group">
+                {% if has_prev %}
+                <a href="?month={{ prev_month_link }}" class="btn btn-outline">
+                    &larr; {{ prev_month|date:"F Y" }}
+                </a>
+                {% endif %}
+                <button class="btn btn-primary" disabled>
+                    {{ current_month|date:"F Y" }}
+                </button>
+                {% if has_next %}
+                <a href="?month={{ next_month_link }}" class="btn btn-outline">
+                    {{ next_month|date:"F Y" }} &rarr;
+                </a>
+                {% endif %}
+            </div>
+        </div>
+        <div class="modal-overlay" id="searchModal">
+            <div class="search-modal">
+                <div class="modal-header">
+                    <h3 class="modal-title">Search Residents</h3>
+                    <button class="modal-close" onclick="closeSearchModal()">&times;</button>
+                </div>
+                <form method="get" class="search-form" onsubmit="closeSearchModal()">
+                    {% if request.GET.month %}
+                    <input type="hidden" name="month" value="{{ request.GET.month }}">
+                    {% endif %}
+                    <div class="form-group">
+                        <label for="surname">Surname</label>
+                        <input type="text" id="surname" name="surname" value="{{ search_surname }}">
+                    </div>
+                    <div class="form-group">
+                        <label for="house_number">House Number</label>
+                        <input type="text" id="house_number" name="house_number" value="{{ search_house_number }}">
+                    </div>
+                    <div class="form-group">
+                        <label for="payment_status">Payment Status</label>
+                        <select id="payment_status" name="payment_status">
+                            <option value="">All</option>
+                            <option value="paid" {% if search_payment_status == 'paid' %}selected{% endif %}>Paid</option>
+                            <option value="pending" {% if search_payment_status == 'pending' %}selected{% endif %}>Pending</option>
+                        </select>
+                    </div>
+                    <div class="form-buttons">
+                        <button type="button" class="btn btn-secondary" onclick="window.location.href='/residents/'">Close</button>
+                        <button type="submit" class="btn btn-primary">Search</button>
+                        {% if request.GET.surname or request.GET.house_number or request.GET.payment_status %}
+                        <a href="?{% if request.GET.month %}month={{ request.GET.month }}{% endif %}" 
+                           class="btn btn-outline">Clear Filters</a>
+                        {% endif %}
+                    </div>
+                </form>                
+            </div>
+        </div>
+        <div class="residents-grid">
+            {% for payment in payments %}
+            <div class="resident-card {% if payment.is_paid %}paid{% else %}pending{% endif %}">
+                <div class="menu-container">
+                    <h5>{{ payment.resident.surname }} </h5>
+                    <button class="action-menu-btn" onclick="toggleActions('{{ payment.id }}')">
+                        <i class="fa-solid fa-ellipsis-vertical"></i>
+                    </button>
+                    <div id="actions-popup-{{ payment.id }}" class="actions-popup">
+                        <form method="post" action="{% url 'mark_as_paid' payment.id %}{% if request.GET.month %}?month={{ request.GET.month }}{% endif %}" class="popup-form">
+                            {% csrf_token %}
+                            {% if not payment.is_paid %}
+                            <button type="submit" class="popup-btn success">
+                                Mark as Paid <i class="fa-solid fa-check-circle"></i>
+                            </button>
+                            {% endif %}
+                        </form>
+                        <form method="post" action="{% url 'delete_resident' payment.resident.id %}{% if request.GET.month %}?month={{ request.GET.month }}{% endif %}" class="popup-form">
+                            {% csrf_token %}
+                            <button type="submit" class="popup-btn danger" 
+                                    onclick="return confirm('Are you sure you want to delete this resident?')">
+                                Delete <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                <p>
+                    {{ payment.resident.house_number }} {{ payment.resident.street_name }}<br>
+                    {{ payment.resident.place_name }}
+                </p>
+                <p>
+                    Status: 
+                    {% if payment.is_paid %}
+                        <span class="badge success">Paid</span>
+                    {% else %}
+                        <span class="badge warning">Pending</span>
+                    {% endif %}
+                </p>
+            </div>
+            {% empty %}
+            <div class="no-residents">
+                <p>No residents found for {{ current_month|date:"F Y" }}</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    <script>
+        function toggleActions(paymentId) {
+            var popup = document.getElementById('actions-popup-' + paymentId);
+            popup.style.display = (popup.style.display === 'block') ? 'none' : 'block';
+        }
+                document.addEventListener('click', function(event) {
+                    if (!event.target.closest('.menu-container')) {
+                        const popups = document.querySelectorAll('.actions-popup');
+                        popups.forEach(popup => {
+                            popup.style.display = 'none';
+                            popup.classList.remove('top');
+                        });
+                    }
+                });
+                function toggleActions(bookingId) {
+                    event.stopPropagation();
+                    const popups = document.querySelectorAll('.actions-popup');
+                    popups.forEach(popup => {
+                        if (popup.id !== `actions-popup-${bookingId}`) {
+                            popup.style.display = 'none';
+                            popup.classList.remove('top');
+                        }
+                    });
+                    const popup = document.getElementById(`actions-popup-${bookingId}`);
+                    const button = event.currentTarget;
+                    const buttonRect = button.getBoundingClientRect();
+                    const viewportHeight = window.innerHeight;
+                    popup.style.removeProperty('top');
+                    popup.style.removeProperty('bottom');
+                    const spaceBelow = viewportHeight - buttonRect.bottom;
+                    const spaceAbove = buttonRect.top;
+                    if (spaceBelow < 150 && spaceAbove > spaceBelow) {
+                        popup.classList.add('top');
+                    } else {
+                        popup.classList.remove('top');
+                    }
+                    popup.style.display = popup.style.display === 'none' ? 'block' : 'none';
+                }
+                function openSearchModal() {
+                    document.getElementById('searchModal').style.display = 'block';
+                    document.body.style.overflow = 'hidden'; 
+                }
+                function closeSearchModal() {
+                    document.getElementById('searchModal').style.display = 'none';
+                    document.body.style.overflow = 'auto'; 
+                }
+                function closeSearchModal() {
+                    // Hide the modal
+                    document.getElementById("searchModal").style.display = 'none';
+                
+                    // Reload the page
+                    window.location.reload();
+                }
+                
+                function resetSearch() {
+                    document.getElementById('date').value = '';
+                    document.getElementById('reference').value = '';
+                }
+                window.onclick = function(event) {
+                    const modal = document.getElementById('searchModal');
+                    if (event.target == modal) {
+                        closeSearchModal();
+                    }
+                }
+                document.addEventListener('keydown', function(event) {
+                    if (event.key === 'Escape') {
+                        closeSearchModal();
+                    }
+                });
+                function openSearchModal() {
+                    document.getElementById('searchModal').style.display = 'block';
+                    document.body.style.overflow = 'hidden'; 
+                }
+                function closeSearchModal() {
+                    document.getElementById("searchModal").style.display = 'none';
+                }
+                
+                document.getElementById('searchModal').addEventListener('click', function(e) {
+                    if (e.target === this) {
+                        closeSearchModal();
+                    }
+                });
+                {% if request.GET.surname or request.GET.house_number or request.GET.payment_status %}
+                document.addEventListener('DOMContentLoaded', function() {
+                    openSearchModal();
+                });
+                {% endif %}
+                document.addEventListener('keydown', function(e) {
+                    if (e.key === 'Escape' && document.getElementById('searchModal').style.display === 'block') {
+                        closeSearchModal();
+                    }
+                });
+    </script>
+</body>
+</html>

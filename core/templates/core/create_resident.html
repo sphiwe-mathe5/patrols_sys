@@ -1,0 +1,64 @@
+{% load static %} {% load humanize %}
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <link rel="stylesheet" href="{% static 'css/list.css' %}" />
+        <link
+            rel="stylesheet"
+            href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap"
+        />
+        <link
+            rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+        />
+        <title>Detailed Guide</title>
+        <style>
+        </style>
+    </head>
+    <body>
+        <nav class="navbar">
+            <div class="logo">
+                <a href="{% url 'index' %}">Patrol System</a>
+            </div>
+            <ul class="navbar-nav" id="nav-menu">
+                {% if not user.is_authenticated %}
+                <li class="nav-item">
+                    <a class="nav-link default" href="{% url 'login' %}" class="sign-in"><span>Log in</span></a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link default" href="{% url 'signup' %}" class="sign-up"><span>Register</span></a> {%
+                    else %}
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link default" href="{% url 'resident_list'%}">Manage Residents</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link default" href="{% url 'logout' %}"
+                        ><i class="fa-solid fa-arrow-right-from-bracket"></i
+                    ></a>
+                </li>
+                <li>{% endif %}</li>
+            </ul>
+        </nav>
+        <div class="container">
+            <div class="form-card">
+                <h2>Add New Resident</h2>
+                <form method="post" class="modern-form">
+                    {% csrf_token %} {% for field in form %}
+                    <div class="form-group">
+                        {{ field.label_tag }} {{ field }} {% if field.help_text %}
+                        <small class="help-text">{{ field.help_text }}</small>
+                        {% endif %} {% for error in field.errors %}
+                        <p class="error-message">{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                    {% endfor %}
+                    <button type="submit" class="btn btn-primary">Add Resident</button>
+                </form>
+            </div>
+        </div>
+    </body>
+</html>
