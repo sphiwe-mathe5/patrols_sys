@@ -280,27 +280,29 @@ body {
 }
 .popup-form {
   display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
+  flex-direction: column;  /* Stack the buttons vertically */
+  gap: 10px;  /* Add space between buttons */
 }
+
 .popup-btn {
-  width: 100%;
+  width: 100%;  /* Ensure the buttons take up full width */
   padding: 0.5rem;
   border: none;
   border-radius: 4px;
   cursor: pointer;
-  text-align: left;
-  background: none;
-  transition: background-color 0.2s;
+  text-align: center;  /* Center the text inside the button */
 }
-.popup-btn.success:hover {
+
+.popup-btn.success {
   background-color: #e8f5e9;
   color: #2e7d32;
 }
-.popup-btn.danger:hover {
+
+.popup-btn.danger {
   background-color: #ffebee;
   color: #c62828;
 }
+
 .menu-container {
   position: relative;
   display: flex;
