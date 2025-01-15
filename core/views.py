@@ -34,13 +34,7 @@ from django.views.generic import (
     UpdateView,
     DeleteView
 )
-def is_admin(user):
-    if not user.is_staff:
-        raise PermissionDenied("You don't have permission to access this page.")
-    return True
 
-@user_passes_test(is_admin)
-@login_required
 def index(request):
     if request.method == 'POST':
         form = ResidentForm(request.POST)
